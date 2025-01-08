@@ -11,6 +11,7 @@ class GameCore(
     private var pause = false
     private var curRow: Int = 0;
     private var curCol: Int = 0;
+    private var difficulty = 1
     private var rows = mutableListOf<MutableList<Char>>();
     private lateinit var word: String;
 
@@ -48,26 +49,26 @@ class GameCore(
                 rows[row][col] = ' '
             }
         }
-        setWordNormal()
-    }
-
-    fun getChar(row: Int, col: Int): Char {
-        if (row < 0 || row >= rowCount || col < 0 || col >= 5) {
-            return ' '
+        when(difficulty) {
+            0 -> setWordTest()
+            1 -> setWordNormal()
+            2 -> setWordHard()
+            else -> setWordNormal()
         }
-
-        return rows[row][col]
     }
+
 
     fun setNextChar(c: Char): Boolean {
-        if (rows[curRow][curCol] == ' ') {
-            rows[curRow][curCol] = c
-            if (curCol < 4) {
-                curCol++
+        when {
+            curCol == 5 -> return false
+            rows[curRow][curCol] == ' ' -> {
+                rows[curRow][curCol] = c
+                if (curCol < 5) curCol++
+                return true
             }
-            return true
+
+            else -> return false
         }
-        return false
     }
 
     fun erase() {
@@ -78,7 +79,7 @@ class GameCore(
     }
 
     fun enter(): Boolean {
-        if (curCol == 4 && curRow <= rowCount) {
+        if (curCol == 5 && curRow <= rowCount) {
             curCol = 0
             curRow++
             if (curRow == rowCount) {

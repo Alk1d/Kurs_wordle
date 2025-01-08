@@ -10,15 +10,10 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.ViewModelProvider
 import androidx.viewbinding.ViewBindings
-import com.example.kurs_wordle.MainActivity
 import com.example.kurs_wordle.R
 import com.example.kurs_wordle.databinding.FragmentGameBinding
-import com.example.kurs_wordle.ui.settings.SettingsFragment
 import com.example.kurs_wordle.ui.settings.SettingsViewModel
 
 
@@ -37,6 +32,7 @@ private var _binding: FragmentGameBinding? = null
     private var difficulty = 1
     private lateinit var gameCore: GameCore
     private val settingsModel: SettingsViewModel by activityViewModels()
+    private val gameModel: GameViewModel by activityViewModels()
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -56,6 +52,13 @@ private var _binding: FragmentGameBinding? = null
     settingsModel.settings.observe(activity as LifecycleOwner, {
       difficulty = it
     })
+    gameModel._countGames.observe(activity as LifecycleOwner, {
+      countGames = it
+    })
+    gameModel._countWins.observe(activity as LifecycleOwner, {
+      countWins = it
+    })
+
     setEventListeners()
     initTexts()
     newRound(difficulty)
@@ -66,38 +69,6 @@ private var _binding: FragmentGameBinding? = null
 
       val resID = resources.getIdentifier("button${c.toChar()}", "id", activity?.packageName)
       val btn = ViewBindings.findChildViewById<Button>(view, resID)
-
-     /* val btn = when (c) {
-        65 -> binding.buttonA
-        66 -> binding.buttonB
-        67 -> binding.buttonC
-        68 -> binding.buttonD
-        69 -> binding.buttonE
-        70 -> binding.buttonF
-        71 -> binding.buttonG
-        72 -> binding.buttonH
-        73 -> binding.buttonI
-        74 -> binding.buttonJ
-        75 -> binding.buttonK
-        76 -> binding.buttonL
-        77 -> binding.buttonM
-        78 -> binding.buttonN
-        79 -> binding.buttonO
-        80 -> binding.buttonP
-        81 -> binding.buttonQ
-        82 -> binding.buttonR
-        83 -> binding.buttonS
-        84 -> binding.buttonT
-        85 -> binding.buttonU
-        86 -> binding.buttonV
-        87 -> binding.buttonW
-        88 -> binding.buttonX
-        89 -> binding.buttonY
-        90 -> binding.buttonZ
-        else -> null
-      }
-
-      */
 
       btn?.setOnClickListener {
         if (gameCore.isPause()) {
@@ -139,6 +110,7 @@ private var _binding: FragmentGameBinding? = null
         }
         if (gameCore.getResult()) {
           countWins++
+          gameModel._countWins.value = countWins
         }
       }
     }
@@ -188,9 +160,11 @@ private var _binding: FragmentGameBinding? = null
 
     textGames.text = "Games: $countGames"
     textWins.text = "Wins: $countWins"
+    gameModel._countGames.value = countGames
     countGames++
 
-    Log.e("Word", "=============---- ${gameCore.getFinalWord()}")
+
+    Log.e("Word", "---------- ${gameCore.getFinalWord()}")
   }
 
 override fun onDestroyView() {
